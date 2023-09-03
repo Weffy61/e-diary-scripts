@@ -2,17 +2,35 @@ import random
 from datacenter.models import Schoolkid, Teacher, Subject, Lesson, Mark, Chastisement, Commendation
 
 
-def fix_marks(schoolkid):
-    Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3]).update(points=5)
+def get_child(name):
+    try:
+        child = Schoolkid.objects.get(full_name__contains=name)
+        return child
+    except Schoolkid.DoesNotExist:
+        return f'Ученик с именем "{name}" не найден'
+    except Schoolkid.MultipleObjectsReturned:
+        return f'Найдено несколько учеников с именем "{name}"'
 
 
-def remove_chastisements(schoolkid):
-    Chastisement.objects.filter(schoolkid=schoolkid).delete()
+def fix_marks(name):
+    child = get_child(name)
+    try:
+        Mark.objects.filter(schoolkid=child, points__in=[2, 3]).update(points=5)
+    except ValueError:
+        return child
+
+
+def remove_chastisements(name):
+    child = get_child(name)
+    try:
+        Chastisement.objects.filter(schoolkid=child).delete()
+    except ValueError:
+        return child
 
 
 def create_commendation(name, subject_title):
+    child = get_child(name)
     try:
-        child = Schoolkid.objects.get(full_name__contains=name)
         year_of_study = child.year_of_study
         group_letter = child.group_letter
         date_of_last_lesson = Lesson.objects.filter(year_of_study=year_of_study,
@@ -35,8 +53,5 @@ def create_commendation(name, subject_title):
                                     schoolkid=child,
                                     subject=subject,
                                     teacher=teacher)
-
-    except Schoolkid.DoesNotExist:
-        return f'Ученик с именем "{name}" не найден'
-    except Schoolkid.MultipleObjectsReturned:
-        return f'Найдено несколько учеников с именем "{name}"'
+    except AttributeError:
+        return child
