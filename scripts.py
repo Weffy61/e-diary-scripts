@@ -33,16 +33,13 @@ def create_commendation(name, subject_title):
     try:
         year_of_study = child.year_of_study
         group_letter = child.group_letter
-        date_of_last_lesson = Lesson.objects.filter(year_of_study=year_of_study,
-                                                    group_letter=group_letter,
-                                                    subject__title=subject_title).order_by('-date').first().date
-
-        subject = Subject.objects.get(title=subject_title,
-                                      year_of_study=year_of_study)
-
-        teacher = Lesson.objects.filter(year_of_study=year_of_study,
+        lessons = Lesson.objects.filter(year_of_study=year_of_study,
                                         group_letter=group_letter,
-                                        subject__title=subject_title).order_by('-date').first().teacher
+                                        subject__title=subject_title)
+
+        date_of_last_lesson = lessons.order_by('-date').first().date
+        subject = lessons.order_by('-date').first().subject
+        teacher = lessons.order_by('-date').first().teacher
 
         with open('praise.txt', 'r') as file:
             phrases = file.readlines()
