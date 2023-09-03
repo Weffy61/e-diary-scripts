@@ -3,11 +3,7 @@ from datacenter.models import Schoolkid, Teacher, Subject, Lesson, Mark, Chastis
 
 
 def fix_marks(schoolkid):
-    marks = [i for i in Mark.objects.filter(schoolkid=schoolkid,
-                                            points__in=[2, 3])]
-    for mark in marks:
-        mark.points = 5
-        mark.save()
+    Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3]).update(points=5)
 
 
 def remove_chastisements(schoolkid):
